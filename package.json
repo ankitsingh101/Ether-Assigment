@@ -1,0 +1,25 @@
+{
+    "name": "crypto-api-server",
+    "version": "1.0.0",
+    "description": "API server using ethers.js and ccxt libraries",
+    "main": "index.js",
+    "scripts": {
+      "start": "node src/app.js"
+    },
+    "dependencies": {
+      "ccxt": "^1.57.73",
+      "ethers": "^5.5.3",
+      "express": "^4.17.1"
+    },
+    "devDependencies": {
+      "eslint": "^7.32.0",
+      "eslint-config-airbnb-base": "^14.2.1",
+      "eslint-plugin-import": "^2.24.2"
+    },
+    "eslintConfig": {
+      "extends": "airbnb-base"
+    },
+    "author": "Your Name",
+    "license": "MIT"
+  }
+  

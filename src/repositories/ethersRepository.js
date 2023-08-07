@@ -4,17 +4,35 @@ const ethers = require('ethers');
 const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/6660e89647e947fa94288ced235afb2a');
 
 const getLatestTransactions = async () => {
-
   const latestBlockNumber = await provider.getBlockNumber();
-  const blockRange = 1000;
-  
+  const blockRange = 20;
+  const batchSize = 10; // Number of blocks to fetch transactions in parallel
+
   const transactions = [];
 
-  // Fetch transactions from the latest block and previous blocks
-  for (let i = latestBlockNumber; i > latestBlockNumber - blockRange; i--) {
-    const block = await provider.getBlockWithTransactions(i);
-    transactions.push(...block.transactions);
+  // Create an array of promises to fetch transactions for each block
+  const fetchPromises = [];
+  for (let i = latestBlockNumber; i > latestBlockNumber - blockRange; i -= batchSize) {
+    const batchPromises = [];
+
+    // Fetch transactions for each block in the batch
+    for (let j = i; j > Math.max(i - batchSize + 1, 0); j--) {
+      batchPromises.push(provider.getBlockWithTransactions(j));
+    }
+
+    // Push the promise array of blocks into the batchPromises array
+    fetchPromises.push(Promise.all(batchPromises));
   }
+
+  // Await all promises for batched block arrays
+  const batchBlocksArrays = await Promise.all(fetchPromises);
+
+  // Process transactions from the batched block arrays
+  batchBlocksArrays.forEach(batchBlocks => {
+    batchBlocks.forEach(block => {
+      transactions.push(...block.transactions);
+    });
+  });
 
   // Process and sort transactions based on ether amount
   const sortedTransactions = transactions

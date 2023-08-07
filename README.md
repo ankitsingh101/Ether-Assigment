@@ -1,6 +1,43 @@
 # Ethereum and CCXT  Assignment API Documentation
 
-The Ethereum and CCXT API provides endpoints to interact with the Ethereum network and access information from cryptocurrency exchanges using the CCXT library. This documentation outlines the available endpoints and their usage.
+The Ethereum and CCXT API provides endpoints to interact with the Ethereum network and access information from cryptocurrency exchanges using the CCXT library. 
+
+## For setup
+
+### Download the repository as a zip file:
+a. On the repository page, click the "Code" button and then select "Download ZIP."
+b. Save the zip file to a location on your computer.
+
+### Extract the zip file:
+a. Navigate to the location where you saved the downloaded zip file.
+b. Right-click the zip file and select "Extract All..."
+c. Choose a destination folder for the extracted files.
+
+### NPM Setup:
+
+### Ensure Node.js and NPM are installed:
+
+a. Make sure you have Node.js and npm installed on your system. You can download them from https://nodejs.org/.
+
+### Install dependencies:
+a. Open a terminal and navigate to the project folder (the one where you extracted the downloaded zip file).
+b. Run the following command to install the required dependencies:
+```code
+npm install
+```
+
+### Run the Application:
+ - Start the application:
+  - After the dependencies are installed, you can start the application using the following command:
+
+```code
+npm start
+```
+
+ - Access the API:
+    Once the application is running, you can access the API endpoints you defined in your code. Open a web browser or use tools like Postman to make GET requests to the endpoints.
+
+This documentation outlines the available endpoints and their usage.
 
 ## Table of Contents
 

@@ -1,52 +1,55 @@
 const ethers = require('ethers');
 
-// Connect to the Ethereum network using Infura or any other provider
 const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/6660e89647e947fa94288ced235afb2a');
 
 const getLatestTransactions = async () => {
   const latestBlockNumber = await provider.getBlockNumber();
-  const blockRange = 20;
-  const batchSize = 10; // Number of blocks to fetch transactions in parallel
+  const blockRange = 1000;
+  const chunkSize = 10;
+  const numChunks = Math.ceil(blockRange / chunkSize);
 
-  const transactions = [];
+  const transactionsPromises = [];
 
-  // Create an array of promises to fetch transactions for each block
-  const fetchPromises = [];
-  for (let i = latestBlockNumber; i > latestBlockNumber - blockRange; i -= batchSize) {
-    const batchPromises = [];
+  for (let chunkIndex = 0; chunkIndex < numChunks; chunkIndex++) {
+    const startBlock = latestBlockNumber - chunkIndex * chunkSize;
+    const endBlock = Math.max(startBlock - chunkSize + 1, 0);
 
-    // Fetch transactions for each block in the batch
-    for (let j = i; j > Math.max(i - batchSize + 1, 0); j--) {
-      batchPromises.push(provider.getBlockWithTransactions(j));
-    }
-
-    // Push the promise array of blocks into the batchPromises array
-    fetchPromises.push(Promise.all(batchPromises));
+    transactionsPromises.push(getTransactionsForChunk(startBlock, endBlock));
   }
 
-  // Await all promises for batched block arrays
-  const batchBlocksArrays = await Promise.all(fetchPromises);
+  const chunkResults = await Promise.all(transactionsPromises);
 
-  // Process transactions from the batched block arrays
-  batchBlocksArrays.forEach(batchBlocks => {
-    batchBlocks.forEach(block => {
-      transactions.push(...block.transactions);
-    });
-  });
-
-  // Process and sort transactions based on ether amount
-  const sortedTransactions = transactions
-    .filter(tx => tx.value.gt(0)) // Filter out zero value transactions
+  const sortedTransactions = chunkResults
+    .flat()
+    .filter(tx => tx.value.gt(0))
     .map(tx => ({
       hash: tx.hash,
       sender: tx.from,
       receiver: tx.to,
-      amount: ethers.utils.formatEther(tx.value), // Convert wei to ether
+      amount: ethers.utils.formatEther(tx.value),
       blockNumber: tx.blockNumber,
     }))
-    .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)); // Sort by descending ether amount
+    .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
 
   return sortedTransactions;
+};
+
+const getTransactionsForChunk = async (startBlock, endBlock) => {
+  const transactionsPromises = [];
+
+  // Fetch transactions for each block in the chunk
+  for (let i = startBlock; i >= endBlock; i--) {
+    transactionsPromises.push(getTransactionsForBlock(i));
+  }
+
+  const transactionsArrays = await Promise.all(transactionsPromises);
+
+  return transactionsArrays.flat();
+};
+
+const getTransactionsForBlock = async (blockNumber) => {
+  const block = await provider.getBlockWithTransactions(blockNumber);
+  return block.transactions;
 };
 
 module.exports = {
